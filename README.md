@@ -2,7 +2,7 @@
 
 > :bulb::low_brightness: Control System for a interactive light installation :low_brightness::bulb:
 
-![demo](./assets/images/sc-01)
+![demo](./assets/images/sc-01.png)
 
 It's prototyped in Processing.
 

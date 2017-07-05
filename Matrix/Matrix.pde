@@ -66,7 +66,7 @@ void keyPressed() {
     system.bangElapseCol(3, true);
   }
   if (key == '7') {
-    system.bangElapseRow(1, true);
+    system.bangBounceRow(1, true);
   }
 
 

@@ -576,6 +576,29 @@ class System {
     bangElapse(index);
   }
 
+  // bounce bang
+  void bangBounceOne(int id, int st, int en) {
+    strips[id].bangBounce(st, en);
+  }
+  void bangBounceRow(int index, boolean dir) {
+    for (int i = 0; i < nOfCol; i++) {
+      bangBounceOne(
+        i + index * nOfCol,
+        dir ? 0 : nOfLED - 1,
+        !dir ? 0 : nOfLED - 1
+      );
+    }
+  }
+  void bangBounceCol(int index, boolean dir) {
+    for (int i = 0; i < nOfCol; i++) {
+      bangBounceOne(
+        index + i * nOfCol,
+        dir ? 0 : nOfLED - 1,
+        !dir ? 0 : nOfLED - 1
+      );
+    }
+  }
+
   boolean complexAsyncElapseActivate = false;
   int complexAsyncElapseTriggerIndex = 0;
   boolean bangComplexAsyncElapse = false;

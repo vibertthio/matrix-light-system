@@ -1,4 +1,4 @@
-final int nOfLED = 60;
+final int nOfLED = 40;
 
 class Strip {
   int id;
@@ -34,6 +34,9 @@ class Strip {
   float dimOnEaseRatio = 8;
   float dimOffEaseRatio = 0.2;
 
+  // bounce
+  Bounce bounce;
+
   // fade control
   boolean fadeControl = false;
   int fadeControlMode = 0; // 0 for middle, 1 for left, 2 for right
@@ -61,6 +64,9 @@ class Strip {
     for (int i = 0; i < nOfLED; i++) {
       lights[i] = new Light(xpos + length * i / nOfLED, ypos, zpos);
     }
+
+    // bounce
+    bounce = new Bounce(this);
   }
 
   void update() {
@@ -86,7 +92,6 @@ class Strip {
           dimming = false;
           repeatBreathing = false;
         }
-      // } else if (blink) {
       }
       if (blink) {
         // println("blink check!!");
@@ -104,23 +109,13 @@ class Strip {
   }
 
   void lightsUpdate() {
-    // if (elapsing) {
-    //   elapseCount++;
-    //   if (elapseCount > elapseCountLimit) {
-    //     elapseCount = 0;
-    //     lights[elapseIndex].turnOnFor(5, elapseEdge);
-    //     int dif = (elapseDirection) ? 1 : (-1);
-    //     elapseIndex = (elapseIndex + dif) % nOfLED;
-    //     if (elapseIndex == elapseEndIndex) {
-    //       elapsing = false;
-    //     }
-    //   }
-    // }
-    // elapse.update();
-
+    // elapse
     for (int i = 0, n = elapses.size(); i < n; i++) {
       elapses.get(i).update();
     }
+
+    // bounce
+    bounce.update();
 
     for (int i = 0; i < nOfLED; i++) {
       lights[i].update();
@@ -274,6 +269,10 @@ class Strip {
     }
   }
 
+  void bangBounce(int st, int en) {
+    bounce.bang(st, en);
+  }
+
   // dim 3 times
   void dimRepeat(int time, int ll) {
     alpha = 0;
@@ -382,6 +381,60 @@ class Strip {
 
 }
 
+class Bounce {
+  Strip strip;
+
+  boolean bouncing = false;
+  boolean dir = true;
+  boolean foward = true;
+  int st;
+  int en;
+  int index;
+  int edge = 50;
+  int count = 0;
+  int limit = 0;
+
+  Bounce(Strip _s) { strip = _s; }
+
+  void bang(int _st, int _en) {
+    // println("st : " + _st);
+    // println("en : " + _en);
+    // println("dir : " + dir);
+    bouncing = true;
+    foward = true;
+    st = constrain(_st, 0, nOfLED - 1);
+    en = constrain(_en, 0, nOfLED - 1);
+    dir = (st < en);
+    index = st;
+    count = 0;
+    for (int i = 0, n = strip.lights.length; i < n; i++) {
+      strip.lights[i].turnOff();
+    }
+  }
+
+  void update() {
+    if (bouncing) {
+      count++;
+      if (count > limit) {
+        count = 0;
+        if (foward) {
+          strip.lights[index].turnOn(edge);
+          index = index + (dir ? 1 : -1);
+          if (index == en) {
+            foward = false;
+          }
+        } else {
+          if (index == st) {
+            bouncing = false;
+          }
+          strip.lights[index].turnOff(edge);
+          index = index + (!dir ? 1 : -1);
+        }
+      }
+    }
+  }
+}
+
 class Elapse {
   Strip strip;
 
@@ -403,6 +456,7 @@ class Elapse {
     elapseDirection = dir;
     elapseIndex = constrain(st, 0, nOfLED - 1);
     elapseCount = 0;
+
   }
 
   void update() {

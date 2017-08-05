@@ -3,9 +3,12 @@ class System {
   int nOfStrips = 16;
   int nOfCol = 3;
 
+  Story story;
+
   boolean casual = true;
 
   System() {
+    story = new Story(this);
     strips = new Strip[nOfStrips];
     float unit = 150;
     float gap = unit * 0.2;
@@ -16,26 +19,26 @@ class System {
     float y3 = middleY + 1 * unit;
 
     // first row
-    strips[0] = new Strip(0, 0, middleX - unit * 2, y1 - gap * 2);
-    strips[1] = new Strip(1, 0, middleX - unit, y1 - gap);
-    strips[2] = new Strip(2, 0, middleX, y1);
-    strips[3] = new Strip(3, 0, middleX + unit, y1 - gap);
-    strips[4] = new Strip(4, 0, middleX + unit * 2, y1 - gap * 2);
+    strips[0] = new Strip(this, 0, 0, middleX - unit * 2, y1 - gap * 2);
+    strips[1] = new Strip(this, 1, 0, middleX - unit, y1 - gap);
+    strips[2] = new Strip(this, 2, 0, middleX, y1);
+    strips[3] = new Strip(this, 3, 0, middleX + unit, y1 - gap);
+    strips[4] = new Strip(this, 4, 0, middleX + unit * 2, y1 - gap * 2);
 
     // second row
-    strips[5] = new Strip(5, 0, middleX - 2.5 * unit, y2 - 3 * gap);
-    strips[6] = new Strip(6, 0, middleX - 1.5 * unit, y2 - 2 * gap);
-    strips[7] = new Strip(7, 0, middleX - 0.5 * unit, y2 - gap);
-    strips[8] = new Strip(8, 0, middleX + 0.5 * unit, y2 - gap);
-    strips[9] = new Strip(9, 0, middleX + 1.5 * unit, y2 - 2 * gap);
-    strips[10] = new Strip(10, 0, middleX + 2.5 * unit, y2 - 3 * gap);
+    strips[5] = new Strip(this, 5, 0, middleX - 2.5 * unit, y2 - 3 * gap);
+    strips[6] = new Strip(this, 6, 0, middleX - 1.5 * unit, y2 - 2 * gap);
+    strips[7] = new Strip(this, 7, 0, middleX - 0.5 * unit, y2 - gap);
+    strips[8] = new Strip(this, 8, 0, middleX + 0.5 * unit, y2 - gap);
+    strips[9] = new Strip(this, 9, 0, middleX + 1.5 * unit, y2 - 2 * gap);
+    strips[10] = new Strip(this, 10, 0, middleX + 2.5 * unit, y2 - 3 * gap);
 
     // first row
-    strips[11] = new Strip(11, 0, middleX - unit * 2, y3 - gap * 2);
-    strips[12] = new Strip(12, 0, middleX - unit, y3 - gap);
-    strips[13] = new Strip(13, 0, middleX, y3);
-    strips[14] = new Strip(14, 0, middleX + unit, y3 - gap);
-    strips[15] = new Strip(15, 0, middleX + unit * 2, y3 - gap * 2);
+    strips[11] = new Strip(this, 11, 0, middleX - unit * 2, y3 - gap * 2);
+    strips[12] = new Strip(this, 12, 0, middleX - unit, y3 - gap);
+    strips[13] = new Strip(this, 13, 0, middleX, y3);
+    strips[14] = new Strip(this, 14, 0, middleX + unit, y3 - gap);
+    strips[15] = new Strip(this, 15, 0, middleX + unit * 2, y3 - gap * 2);
 
     initElapseStateControls();
   }
@@ -50,6 +53,9 @@ class System {
     updateComplexAsyncSequence();
     updateElapseStateControls();
     updateComplexAsyncElapse();
+    if (casual) {
+      casualTurnOn();
+    }
 
     for (int i = 0; i < nOfStrips; i++) {
       strips[i].mouseSensed();
@@ -57,14 +63,17 @@ class System {
       strips[i].render();
     }
 
-    if (random(1) < 0.01) {
-      int id = floor(random(16));
-      strips[id].turnOnEasingFor(400);
-    }
-
     image(canvas, 0, 0);
     canvas.endDraw();
     server.sendImage(canvas);
+  }
+
+  void casualTurnOn() {
+    if (random(1) < 0.01) {
+      int id = floor(random(16));
+      strips[id].turnOnEasingFor(400);
+      strips[id].triggerDryClip();
+    }
   }
 
   void turnOn() {
@@ -700,7 +709,154 @@ class System {
 
   // Interactive
   void mousePressed() {
+    for (int i = 0; i < nOfStrips; i++) {
+      strips[i].mousePressed();
+      if (strips[i].hovering) {
+        story.trigger(i);
+      }
+    }
+  }
+}
 
+class Story {
+  System system;
+  boolean active = false;
+  int activeGroup;
+  int[][] group = {
+    {0, 1, 2, 3},
+    {4, 5, 6, 7},
+    {8, 9, 10, 11},
+    {12, 13, 14, 15},
+  };
+  int phase = 0;
+  int candidate = 4;
+  boolean[] status = {
+    false, false, false, false,
+  };
+
+  Story(System _s) {
+    system = _s;
+  }
+
+  void trigger(int id) {
+    int[] w = whichGroup(id);
+    Strip s = system.strips[id];
+    boolean[] ls = map[id];
+
+    switch(phase) {
+      case 0:
+        activateGroup(id);
+        s.triggerDryClip();
+        s.turnOnFor(300, 100);
+        for (int i = 0; i < ls.length; i++) {
+          if (ls[i]) {
+            system.strips[i].turnOnEasingFor(300);
+            system.strips[i].triggerWetClip();
+          }
+        }
+        phase = 1;
+        break;
+      case 1:
+        if (isInActiveGroup(id)) {
+          if (!status[w[1]]) {
+            status[w[1]] = true;
+            system.strips[id].triggerDryClip();
+            boolean picked = false;
+            for (int i = 0; i < group[activeGroup].length; i++) {
+              if (status[i]) {
+                system.strips[group[activeGroup][i]].turnOn(200);
+              } else {
+                if (picked) {
+                  system.strips[group[activeGroup][i]].dimRepeat(MAX_INT, 200);
+                  candidate = i;
+                } else if (random(1) < 0.5) {
+                  system.strips[group[activeGroup][i]].dimRepeat(MAX_INT, 200);
+                  candidate = i;
+                } else {
+                  picked = true;
+                }
+              }
+            }
+            system.casual = false;
+            phase = 2;
+          }
+        } else {
+          activateGroup(id);
+          s.triggerDryClip();
+          s.turnOnFor(300, 100);
+          for (int i = 0; i < ls.length; i++) {
+            if (ls[i]) {
+              system.strips[i].turnOnEasingFor(300);
+              system.strips[i].triggerWetClip();
+            }
+          }
+        }
+        break;
+      case 2:
+        if (isInActiveGroup(id) && (w[1] == candidate)) {
+          if (!status[w[1]]) {
+            status[w[1]] = true;
+            s.turnOff();
+            s.turnOn(1500);
+            s.triggerDryClip();
+            phase = 3;
+            for (int i = 0; i < group[activeGroup].length; i++) {
+              if (!status[i]) {
+                system.strips[group[activeGroup][i]].dimRepeat(MAX_INT, 200);
+                candidate = i;
+              }
+            }
+          }
+        }
+        break;
+      case 3:
+        if (isInActiveGroup(id) && (w[1] == candidate)) {
+          if (!status[w[1]]) {
+            s.turnOff();
+            s.turnOn(1500);
+            s.triggerDryClip();
+            status[w[1]] = true;
+            system.dimRepeat(20, 30);
+            reset();
+          }
+        }
+        break;
+    }
+    println("phase : " + phase);
+  }
+  int[] whichGroup(int id) {
+    int[] ret = new int[2];
+    for (int i = 0; i < group.length; i++) {
+      for (int j = 0; j < group[i].length; j++) {
+        if (group[i][j] == id) {
+          ret[0] = i;
+          ret[1] = j;
+          return ret;
+        }
+      }
+    }
+    return ret;
+  }
+  void activateGroup(int id) {
+    active = true;
+    int[] w = whichGroup(id);
+    activeGroup = w[0];
+    resetStatus();
+    status[w[1]] = true;
+  }
+  boolean isInActiveGroup(int id) {
+    int[] w = whichGroup(id);
+    return (w[0] == activeGroup);
+  }
+  void reset() {
+    phase = 0;
+    active = false;
+    resetStatus();
+  }
+  void resetStatus() {
+    for (int i = 0, n = status.length; i < n; i++) {
+      status[i] = false;
+    }
   }
 }
 

@@ -2,6 +2,7 @@ import codeanticode.syphon.*;
 import controlP5.*;
 import themidibus.*;
 import processing.serial.*;
+import ddf.minim.*;
 
 
 // controlP5
@@ -12,6 +13,72 @@ Accordion accordion;
 SyphonServer server;
 PGraphics canvas;
 
+// Sound
+Minim minim;
+String[][] samples = {
+  {
+    "dry/1-1.wav",
+    "dry/1-2.wav",
+    "dry/1-3.wav",
+    "dry/1-4.wav",
+    "dry/2-1.wav",
+    "dry/2-2.wav",
+    "dry/2-3.wav",
+    "dry/2-4.wav",
+    "dry/3-1.wav",
+    "dry/3-2.wav",
+    "dry/3-3.wav",
+    "dry/3-4.wav",
+    "dry/4-1.wav",
+    "dry/4-2.wav",
+    "dry/4-3.wav",
+    "dry/4-4.wav",
+  },
+  {
+    "wet/1-1.wav",
+    "wet/1-2.wav",
+    "wet/1-3.wav",
+    "wet/1-4.wav",
+    "wet/2-1.wav",
+    "wet/2-2.wav",
+    "wet/2-3.wav",
+    "wet/2-4.wav",
+    "wet/3-1.wav",
+    "wet/3-2.wav",
+    "wet/3-3.wav",
+    "wet/3-4.wav",
+    "wet/4-1.wav",
+    "wet/4-2.wav",
+    "wet/4-3.wav",
+    "wet/4-4.wav",
+  },
+};
+
+final int MAX_INT = 2147483647;
+final boolean T = true;
+final boolean F = false;
+boolean[][] map = {
+  //0  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15
+  { F, T, F, F, F, T, T, F, F, F, F, F, F, F, F, F}, // 0
+  { T, F, T, F, F, F, T, T, F, F, F, F, F, F, F, F}, // 1
+  { F, T, F, T, F, F, F, T, T, F, F, F, F, F, F, F}, // 2
+  { F, F, T, F, T, F, F, F, T, T, F, F, F, F, F, F}, // 3
+  { F, F, F, T, F, F, F, F, F, T, T, F, F, F, F, F}, // 4
+  { T, F, F, F, F, F, T, F, F, F, F, T, F, F, F, F}, // 5
+  { T, T, F, F, F, T, F, T, F, F, F, T, T, F, F, F}, // 6
+  { F, T, T, F, F, F, T, F, T, F, F, F, T, T, F, F}, // 7
+  { F, F, T, T, F, F, F, T, F, T, F, F, F, T, T, F}, // 8
+  { F, F, F, T, T, F, F, F, T, F, T, F, F, F, T, T}, // 9
+  { F, F, F, F, T, F, F, F, F, T, F, F, F, F, F, T}, // 10
+  { F, F, F, F, F, T, T, F, F, F, F, F, T, F, F, F}, // 11
+  { F, F, F, F, F, F, T, T, F, F, F, T, F, T, F, F}, // 12
+  { F, F, F, F, F, F, F, T, T, F, F, F, T, F, T, F}, // 13
+  { F, F, F, F, F, F, F, F, T, T, F, F, F, T, F, T}, // 14
+  { F, F, F, F, F, F, F, F, F, T, T, F, F, F, T, F}, // 15
+};
+
+
+
 System system;
 
 color c = color(0, 160, 100);
@@ -21,6 +88,9 @@ float master = 1;
 void settings() {
   size(1400, 580, P3D);
   PJOGL.profile=1;
+
+  // Sound
+  minim = new Minim(this);
 }
 
 void setup() {
@@ -28,7 +98,7 @@ void setup() {
   canvas = createGraphics(width, height, P3D);
   system = new System();
 
-  // controlP5
+  // ControlP5
   gui();
 
   // Syphon
@@ -38,6 +108,10 @@ void setup() {
 void draw() {
   background(0);
   system.render();
+}
+
+void mousePressed() {
+  system.mousePressed();
 }
 
 void gui() {

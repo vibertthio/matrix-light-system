@@ -1,6 +1,7 @@
 final int nOfLED = 60;
 
 class Strip {
+  System system;
   int id;
   float angle;
   float xpos;
@@ -40,8 +41,13 @@ class Strip {
   int fadeControlMode = 0; // 0 for middle, 1 for left, 2 for right
   float fadeControlValue = 0;
 
+  // Audio
+  AudioSample wetClip;
+  AudioSample dryClip;
 
-  Strip(int _id, float _a, float _x, float _y) {
+
+  Strip(System _s, int _id, float _a, float _x, float _y) {
+    system = _s;
     id = _id;
     angle = _a;
     // xpos = width / 2 - length / 2;
@@ -53,6 +59,26 @@ class Strip {
     // Timers
     dimTimer = new TimeLine(300);
     turnOnTimer = new TimeLine(50);
+
+    // Sound
+    initSound();
+  }
+
+  void initSound() {
+    dryClip = minim.loadSample(
+      samples[0][id],
+      512
+    );
+    wetClip = minim.loadSample(
+      samples[1][id],
+      512
+    );
+
+    dryClip.setGain(-5);
+    wetClip.setGain(-5);
+
+    if ( dryClip == null ) println("loading smaple error!");
+    if ( wetClip == null ) println("loading smaple error!");
   }
 
   void initLights() {
@@ -401,6 +427,27 @@ class Strip {
     fadeControlValue = constrain(value, 0, 1);
   }
 
+  // Sound
+  void triggerDryClip() {
+    dryClip.trigger();
+  }
+  void triggerWetClip() {
+    wetClip.trigger();
+  }
+  void mousePressed() {
+    if (hovering) {
+      // println("id : " + id);
+      // triggerDryClip();
+      // turnOnFor(300, 100);
+      // boolean[] ls = map[id];
+      // for (int i = 0; i < ls.length; i++) {
+      //   if (ls[i]) {
+      //     system.strips[i].turnOnEasingFor(300);
+      //     system.strips[i].triggerWetClip();
+      //   }
+      // }
+    }
+  }
 }
 
 class Elapse {

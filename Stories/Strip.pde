@@ -429,11 +429,43 @@ class Strip {
 
   // Sound
   void triggerDryClip() {
+    dryClip.setGain(-5);
+    dryClip.trigger();
+  }
+  void triggerDryClip(float gain) {
+    dryClip.setGain(gain);
     dryClip.trigger();
   }
   void triggerWetClip() {
+    wetClip.setGain(-5);
     wetClip.trigger();
   }
+  void triggerWetClip(float gain) {
+    wetClip.setGain(gain);
+    wetClip.trigger();
+  }
+
+  boolean playingDelayWetClip = false;
+  int wetClipDelay = 30;
+  int wetClipDelayCount = 0;
+  void soundUpdate() {
+    if (playingDelayWetClip) {
+      wetClipDelayCount++;
+      if (wetClipDelayCount > wetClipDelay) {
+        triggerWetClip(-10);
+        wetClipDelayCount = 0;
+        playingDelayWetClip = false;
+      }
+    }
+  }
+  void triggerWetClipDelay() {
+    playingDelayWetClip = true;
+  }
+  void triggerWetClipDelay(int delay) {
+    wetClipDelay = delay;
+    playingDelayWetClip = true;
+  }
+
   void mousePressed() {
     if (hovering) {
       // println("id : " + id);

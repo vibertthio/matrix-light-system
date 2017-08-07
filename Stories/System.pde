@@ -59,6 +59,7 @@ class System {
 
     for (int i = 0; i < nOfStrips; i++) {
       strips[i].mouseSensed();
+      strips[i].soundUpdate();
       strips[i].update();
       strips[i].render();
     }
@@ -750,8 +751,9 @@ class Story {
         s.turnOnFor(300, 100);
         for (int i = 0; i < ls.length; i++) {
           if (ls[i]) {
-            system.strips[i].turnOnEasingFor(300);
-            system.strips[i].triggerWetClip();
+            int del = floor(500 + 1000 * random(1));
+            system.strips[i].turnOnEasingFor(del);
+            system.strips[i].triggerWetClipDelay(del * 30 / 500);
           }
         }
         phase = 1;
@@ -779,6 +781,16 @@ class Story {
             }
             system.casual = false;
             phase = 2;
+          } else {
+            s.triggerDryClip();
+            s.turnOnFor(300, 100);
+            for (int i = 0; i < ls.length; i++) {
+              if (ls[i]) {
+                int del = floor(500 + 1000 * random(1));
+                system.strips[i].turnOnEasingFor(del);
+                system.strips[i].triggerWetClipDelay(del * 30 / 500);
+              }
+            }
           }
         } else {
           activateGroup(id);
@@ -786,8 +798,9 @@ class Story {
           s.turnOnFor(300, 100);
           for (int i = 0; i < ls.length; i++) {
             if (ls[i]) {
-              system.strips[i].turnOnEasingFor(300);
-              system.strips[i].triggerWetClip();
+              int del = floor(500 + 1000 * random(1));
+              system.strips[i].turnOnEasingFor(del);
+              system.strips[i].triggerWetClipDelay(del * 30 / 500);
             }
           }
         }

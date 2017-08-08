@@ -2,7 +2,10 @@ import codeanticode.syphon.*;
 import controlP5.*;
 import themidibus.*;
 import processing.serial.*;
+
 import ddf.minim.*;
+import ddf.minim.ugens.*;
+import javax.sound.sampled.*;
 
 
 // controlP5
@@ -103,6 +106,10 @@ void setup() {
 
   // Syphon
   server = new SyphonServer(this, "Processing Syphon");
+
+  Mixer mixer = AudioSystem.getMixer(AudioSystem.getMixerInfo()[9]);
+  println(AudioSystem.getMixerInfo()[8].getName());
+  minim.setOutputMixer(mixer);
 }
 
 void draw() {
@@ -111,7 +118,16 @@ void draw() {
 }
 
 void mousePressed() {
+  noStroke();
+  fill(255, 0, 0);
+  ellipse(mouseX, mouseY, 30, 30);
   system.mousePressed();
+}
+
+void keyPressed() {
+  if (key == ' ') {
+    screenshot();
+  }
 }
 
 void gui() {

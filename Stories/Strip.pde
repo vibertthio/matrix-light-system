@@ -429,7 +429,7 @@ class Strip {
 
   // Sound
   void triggerDryClip() {
-    dryClip.setGain(-5);
+    dryClip.setGain(-2);
     dryClip.trigger();
   }
   void triggerDryClip(float gain) {
@@ -437,7 +437,7 @@ class Strip {
     dryClip.trigger();
   }
   void triggerWetClip() {
-    wetClip.setGain(-5);
+    wetClip.setGain(-2);
     wetClip.trigger();
   }
   void triggerWetClip(float gain) {

@@ -763,20 +763,18 @@ class Story {
           if (!status[w[1]]) {
             status[w[1]] = true;
             system.strips[id].triggerDryClip();
-            boolean picked = false;
+            boolean picked = (random(1) > 0.5);
             for (int i = 0; i < group[activeGroup].length; i++) {
               if (status[i]) {
                 system.strips[group[activeGroup][i]].turnOn(200);
               } else {
+                println("---> " + i);
+                println(picked);
                 if (picked) {
                   system.strips[group[activeGroup][i]].dimRepeat(MAX_INT, 200);
                   candidate = i;
-                } else if (random(1) < 0.5) {
-                  system.strips[group[activeGroup][i]].dimRepeat(MAX_INT, 200);
-                  candidate = i;
-                } else {
-                  picked = true;
                 }
+                picked = !picked;
               }
             }
             system.casual = false;
@@ -864,6 +862,7 @@ class Story {
   void reset() {
     phase = 0;
     active = false;
+    system.casual = true;
     resetStatus();
   }
   void resetStatus() {
